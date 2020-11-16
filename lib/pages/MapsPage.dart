@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:aplikasi_pertama/network/postResponse/postRating.dart';
+import 'package:aplikasi_pertama/network/postResponse/postReview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'src/locations.dart' as locations;
 
 class MapsPage extends StatefulWidget {
@@ -15,10 +18,13 @@ class MapsPage extends StatefulWidget {
 
 class _MapsPageState extends State<MapsPage> {
   var curLat = -7.113943, curLong = 112.408368;
+  var ulasan = TextEditingController();
+  String token;
   // var curLat, curLong;
   Completer<GoogleMapController> _controller = Completer();
   @override
   void initState() {
+    getTokenLogin();
     getCurrentLocation();
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(devicePixelRatio: 2.5), 'images/marker.png')
@@ -27,11 +33,17 @@ class _MapsPageState extends State<MapsPage> {
     });
   }
 
+  getTokenLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String stringValue = prefs.getString('token');
+    token = stringValue;
+  }
+
   BitmapDescriptor pinLocationIcon;
-  var lat, long, img, name, rating, deskripsi;
+  var id, lat, long, img, name, rating, deskripsi, my_rating, my_review;
   final Map<String, Marker> _markers = {};
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final googleOffices = await locations.getGoogleOffices();
+    final googleOffices = await locations.getGoogleOffices(token);
     setState(() {
       _markers.clear();
       for (final office in googleOffices.offices) {
@@ -41,12 +53,16 @@ class _MapsPageState extends State<MapsPage> {
             position: LatLng(office.lat, office.lng),
             onTap: () {
               setState(() {
+                id = office.id;
                 lat = office.lat;
                 long = office.lng;
                 img = office.image;
                 name = office.name;
                 rating = office.rating != null ? office.rating : 0.0;
                 deskripsi = office.deskripsi;
+                my_rating = office.my_rating != null ? office.rating : 0.0;
+                my_review = office.my_review != null ? office.my_review : '';
+                ulasan.value = TextEditingValue(text: my_review);
                 showMaterialModalBottomSheet(
                   context: context,
                   builder: (context, scrollController) => Container(
@@ -93,10 +109,61 @@ class _MapsPageState extends State<MapsPage> {
                             children: [
                               buttonCircle(Icons.near_me, 'RUTE'),
                               buttonCircle(Icons.favorite, 'FAVORITE'),
-                              buttonCircle(Icons.star, 'ULAS'),
                             ],
                           ),
                         ),
+                        Container(
+                            margin: EdgeInsets.only(top: 10.0),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [Text('Nilai Kami')])),
+                        Container(
+                          margin: EdgeInsets.all(10),
+                          child: Container(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                RatingBar(
+                                  initialRating: my_rating,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: true,
+                                  itemCount: 5,
+                                  itemPadding:
+                                      EdgeInsets.symmetric(horizontal: 4.0),
+                                  itemBuilder: (context, _) => Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                  ),
+                                  onRatingUpdate: (myrating) {
+                                    PostRating.postRatingSeller(
+                                            myrating, id, token)
+                                        .then((value) {
+                                      print(value);
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        new Container(
+                            margin: EdgeInsets.all(10),
+                            child: TextField(
+                              controller: ulasan,
+                              decoration: InputDecoration(
+                                hintText: "Reviewnya Dong KK :)",
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    PostReview.PostReviewSeller(
+                                            ulasan.text, id, token)
+                                        .then((value) {
+                                      print(value);
+                                    });
+                                  },
+                                  icon: Icon(Icons.send),
+                                ),
+                              ),
+                            )),
                         DefaultTabController(
                           length: 2,
                           child: SizedBox(

@@ -46,32 +46,37 @@ Map<String, dynamic> _$LatLngToJson(LatLng instance) => <String, dynamic>{
 // }
 
 // Map<String, dynamic> _$RegionToJson(Region instance) => <String, dynamic>{
-    //   'coords': instance.coords,
-    //   'id': instance.id,
-    //   'name': instance.name,
-    //   'zoom': instance.zoom,
-    // };
+//   'coords': instance.coords,
+//   'id': instance.id,
+//   'name': instance.name,
+//   'zoom': instance.zoom,
+// };
 
 Office _$OfficeFromJson(Map<String, dynamic> json) {
   return Office(
     // address: json['address'] as String,
-    // id: json['id'] as String,
+    id: json['id'] as int,
     image: json['image'] as String,
     lat: (json['lat'] as num)?.toDouble(),
     lng: (json['lng'] as num)?.toDouble(),
     name: json['name'] as String,
     rating: (json['rating'] as num)?.toDouble(),
+    my_rating: (json['my_rating'] as num)?.toDouble(),
     deskripsi: json['deskripsi'] as String,
+    my_review: json['my_review'] as String,
   );
 }
 
 Map<String, dynamic> _$OfficeToJson(Office instance) => <String, dynamic>{
+      'id': instance.id,
       'image': instance.image,
       'lat': instance.lat,
       'lng': instance.lng,
       'name': instance.name,
       'rating': instance.rating,
+      'my_rating': instance.my_rating,
       'deskripsi': instance.deskripsi,
+      'my_review': instance.my_review,
     };
 
 Locations _$LocationsFromJson(Map<String, dynamic> json) {
@@ -90,4 +95,4 @@ Locations _$LocationsFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$LocationsToJson(Locations instance) => <String, dynamic>{
       'offices': instance.offices,
       // 'regions': instance.regions,
-};
+    };

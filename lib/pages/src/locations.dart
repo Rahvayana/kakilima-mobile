@@ -16,9 +16,8 @@ class LatLng {
   factory LatLng.fromJson(Map<String, dynamic> json) => _$LatLngFromJson(json);
   Map<String, dynamic> toJson() => _$LatLngToJson(this);
 
-
-   double lat;
-   double lng;
+  double lat;
+  double lng;
 }
 
 @JsonSerializable()
@@ -42,23 +41,29 @@ class LatLng {
 @JsonSerializable()
 class Office {
   Office({
+    this.id,
     this.image,
     this.lat,
     this.lng,
     this.name,
     this.rating,
     this.deskripsi,
+    this.my_rating,
+    this.my_review,
   });
 
   factory Office.fromJson(Map<String, dynamic> json) => _$OfficeFromJson(json);
   Map<String, dynamic> toJson() => _$OfficeToJson(this);
 
+  final int id;
   final String image;
   final double lat;
   final double lng;
   final String name;
   final double rating;
+  final double my_rating;
   final String deskripsi;
+  final String my_review;
 }
 
 @JsonSerializable()
@@ -76,11 +81,17 @@ class Locations {
   // final List<Region> regions;
 }
 
-Future<Locations> getGoogleOffices() async {
-  const googleLocationsURL = 'https://api-kakilima.herokuapp.com/api/maps';
+Future<Locations> getGoogleOffices(String token) async {
+  const googleLocationsURL =
+      'https://api-kakilima.herokuapp.com/api/apps/home/maps';
+  String _token = token.replaceAll(new RegExp('"'), '');
 
   // Retrieve the locations of Google offices
-  final response = await http.get(googleLocationsURL);
+  final response = await http.get(googleLocationsURL, headers: {
+    HttpHeaders.authorizationHeader: "Bearer $_token".toString(),
+    HttpHeaders.contentTypeHeader: "application/json",
+    HttpHeaders.acceptHeader: "application/json"
+  });
   if (response.statusCode == 200) {
     print(response.body);
     return Locations.fromJson(json.decode(response.body));

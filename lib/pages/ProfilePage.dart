@@ -95,10 +95,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: Text('Berdagang'),
                           onTap: () {
                             Navigator.push(
-                              context,
-                              new MaterialPageRoute(
-                                  builder: (context) => Berdagang()),
-                            );
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => new Berdagang()));
                           },
                           trailing: Icon(Icons.arrow_forward_ios),
                         ),

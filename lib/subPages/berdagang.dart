@@ -1,9 +1,12 @@
-import 'package:aplikasi_pertama/home.dart';
-import 'package:aplikasi_pertama/pages/ProfilePage.dart';
+import 'package:aplikasi_pertama/network/getResponse/GetBerdagang.dart';
+import 'package:aplikasi_pertama/network/postResponse/postStatus.dart';
+import 'package:aplikasi_pertama/subPages/profile_berdagang.dart';
+import 'package:aplikasi_pertama/widgets/common_scaffold.dart';
+import 'package:aplikasi_pertama/widgets/profile_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Berdagang extends StatefulWidget {
   @override
@@ -11,298 +14,272 @@ class Berdagang extends StatefulWidget {
 }
 
 class _BerdagangState extends State<Berdagang> {
-  var urlFoto =
-      'https://cdn2.iconfinder.com/data/icons/green-2/32/expand-color-web2-23-512.png';
-  final _formKey = GlobalKey<FormState>();
-  bool isSwitched = false;
-
+  GetBerdagang getBerdagang = null;
+  Size deviceSize;
+  String token;
+  var kategori = '', nama_seller = '', favorite = '', post = '';
+  bool status = false;
+  String statusSeller;
   @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
-        centerTitle: true,
-        leading: new IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.push(
-                context,
-                new MaterialPageRoute(builder: (context) => MyApp()),
-              );
-            }),
-        title: Text('Berdagang'),
-      ),
-      body: new Center(
-        child: SingleChildScrollView(
-          child: new Column(
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 5),
-                child: Card(
-                  child: Image.network(
-                    'https://pngriver.com/wp-content/uploads/2018/04/Download-Food-PNG.png',
-                    height: 100,
+  void initState() {
+    getTokenLogin();
+    super.initState();
+  }
+
+  getTokenLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String stringValue = prefs.getString('token');
+    token = stringValue;
+    setState(() {
+      GetBerdagang.getStatusUser(token).then((value) {
+        getBerdagang = value;
+        setState(() {
+          getUserStatus();
+        });
+      });
+    });
+  }
+
+  Widget profileHeader() => Container(
+        height: deviceSize.height / 4,
+        width: double.infinity,
+        child: Container(
+          margin: EdgeInsets.only(top: 10.0),
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              color: Colors.blueAccent,
+              child: Container(
+                margin: EdgeInsets.all(8.0),
+                child: FittedBox(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50.0),
+                            border:
+                                Border.all(width: 2.0, color: Colors.white)),
+                        child: CircleAvatar(
+                          radius: 40.0,
+                          backgroundImage: NetworkImage(
+                              "https://i.ibb.co/jkDJfht/profile-jaya.jpg"),
+                        ),
+                      ),
+                      Text(
+                        nama_seller,
+                        style: TextStyle(color: Colors.white, fontSize: 20.0),
+                      ),
+                      Text(
+                        kategori,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                              icon: Icon(Icons.add_a_photo), onPressed: null),
+                          IconButton(
+                            icon: Icon(Icons.person_add_alt_1),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) =>
+                                          new ProfileBerdagang()));
+                            },
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),
-              RatingBarIndicator(
-                rating: 2.75,
-                itemBuilder: (context, index) => Icon(
-                  Icons.star,
-                  color: Colors.amber,
+            ),
+          ),
+        ),
+      );
+  Widget imagesCard() => Container(
+        height: deviceSize.height / 6,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Followers",
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.0),
                 ),
-                itemCount: 5,
-                itemSize: 20.0,
-                direction: Axis.horizontal,
               ),
-              Form(
-                  key: _formKey,
-                  child: Column(children: [
-                    new Container(
-                        width: MediaQuery.of(context).size.width * 0.90,
-                        child: TextFormField(
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.blue[900],
-                              fontSize: 16.0,
-                              fontFamily: 'roboto'),
-                          decoration: InputDecoration(
-                            hintText: 'Nama Toko',
-                            prefixIcon: Icon(
-                              Icons.store,
-                              color: Colors.blue[900],
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue[900]),
-                            ),
-                          ),
-                          validator: (namaValue) {
-                            if (namaValue.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: 'Masukkan Nama Anda',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.blue[900],
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                            }
-                            // nama = namaValue;
-                            return null;
-                          },
-                        )),
-                    new Container(
-                        width: MediaQuery.of(context).size.width * 0.90,
-                        child: TextFormField(
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.blue[900],
-                              fontSize: 16.0,
-                              fontFamily: 'roboto'),
-                          decoration: InputDecoration(
-                            hintText: 'Kategori',
-                            prefixIcon: Icon(
-                              Icons.category,
-                              color: Colors.blue[900],
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue[900]),
-                            ),
-                          ),
-                          validator: (namaValue) {
-                            if (namaValue.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: 'Masukkan Nama Anda',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.blue[900],
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                            }
-                            // nama = namaValue;
-                            return null;
-                          },
-                        )),
-                    new Container(
-                        width: MediaQuery.of(context).size.width * 0.90,
-                        child: TextFormField(
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.blue[900],
-                              fontSize: 16.0,
-                              fontFamily: 'roboto'),
-                          decoration: InputDecoration(
-                            hintText: 'Deskripsi',
-                            prefixIcon: Icon(
-                              Icons.description,
-                              color: Colors.blue[900],
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue[900]),
-                            ),
-                          ),
-                          validator: (namaValue) {
-                            if (namaValue.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: 'Masukkan Nama Anda',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.blue[900],
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                            }
-                            // nama = namaValue;
-                            return null;
-                          },
-                        )),
-                    new Container(
-                        width: MediaQuery.of(context).size.width * 0.90,
-                        child: TextFormField(
-                          readOnly: true,
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.blue[900],
-                              fontSize: 16.0,
-                              fontFamily: 'roboto'),
-                          decoration: InputDecoration(
-                            hintText: 'Nyalakan Pelacak',
-                            prefixIcon: Icon(
-                              Icons.map,
-                              color: Colors.blue[900],
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue[900]),
-                            ),
-                            suffixIcon: Switch(
-                              value: isSwitched,
-                              onChanged: (value) {
-                                setState(() {
-                                  isSwitched = value;
-                                  print(isSwitched);
-                                });
-                              },
-                              activeTrackColor: Colors.lightGreenAccent,
-                              activeColor: Colors.green,
-                            ),
-                          ),
-                          validator: (namaValue) {
-                            if (namaValue.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: 'Masukkan Nama Anda',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.blue[900],
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                            }
-                            // nama = namaValue;
-                            return null;
-                          },
-                        )),
-                  ])),
-              DefaultTabController(
-                length: 2,
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.65,
-                  child: Column(
-                    children: <Widget>[
-                      TabBar(
-                        tabs: <Widget>[
-                          Tab(
-                            icon: Icon(
-                              Icons.dashboard,
-                              color: Colors.blueAccent,
-                            ),
-                            child: Text(
-                              'Postingan',
-                              style: TextStyle(color: Colors.blueAccent),
-                            ),
-                          ),
-                          Tab(
-                            icon: Icon(
-                              Icons.star,
-                              color: Colors.blueAccent,
-                            ),
-                            child: Text(
-                              'Ulasan',
-                              style: TextStyle(color: Colors.blueAccent),
-                            ),
-                          )
-                        ],
-                      ),
-                      Expanded(
-                        child: TabBarView(
-                          children: <Widget>[
-                            new StaggeredGridView.countBuilder(
-                              crossAxisCount: 4,
-                              itemCount: 8,
-                              itemBuilder: (BuildContext context, int index) =>
-                                  new Container(
-                                      color: Colors.greenAccent,
-                                      child: new Center(
-                                        child: new CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          child: new Text('$index'),
-                                        ),
-                                      )),
-                              staggeredTileBuilder: (int index) =>
-                                  new StaggeredTile.count(
-                                      2, index.isEven ? 2 : 1),
-                              mainAxisSpacing: 4.0,
-                              crossAxisSpacing: 4.0,
-                            ),
-                            ListView(
-                              children: [
-                                ListTile(
-                                  leading: Icon(Icons.sentiment_satisfied,
-                                      color: Colors.greenAccent),
-                                  title: Text(
-                                      'Makananya enak banget, rasanya pas'),
-                                  subtitle: Text('Maniak Jajan'),
-                                  onTap: () {
-                                    //TO DO SomeThin
-                                  },
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                ),
-                                ListTile(
-                                  leading: Icon(Icons.sentiment_very_satisfied,
-                                      color: Colors.blueAccent),
-                                  title: Text(
-                                      'Es Legen nya segar!!!, recomended banget'),
-                                  subtitle: Text('V for V'),
-                                  onTap: () {
-                                    //TO DO SomeThin
-                                  },
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                ),
-                                ListTile(
-                                  leading: Icon(
-                                      Icons.sentiment_very_dissatisfied,
-                                      color: Colors.redAccent),
-                                  title: Text(
-                                      'Penjualnya cuek, apalagi ketika hujan'),
-                                  subtitle: Text('Budi S'),
-                                  onTap: () {
-                                    //TO DO SomeThin
-                                  },
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+              Expanded(
+                child: Card(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 5,
+                    itemBuilder: (context, i) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.network(
+                          "https://cdn.pixabay.com/photo/2016/10/31/18/14/ice-1786311_960_720.jpg"),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ),
-      ),
+      );
+
+  Widget profileColumn() => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            CircleAvatar(
+              backgroundImage:
+                  NetworkImage("https://i.ibb.co/jkDJfht/profile-jaya.jpg"),
+            ),
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    "Fahrul Sanjaya Post",
+                  ),
+                  SizedBox(
+                    height: 5.0,
+                  ),
+                  Text(
+                    "25 mins ago",
+                  )
+                ],
+              ),
+            ))
+          ],
+        ),
+      );
+
+  Widget postCard(String urlImage) => Container(
+        width: double.infinity,
+        height: deviceSize.height / 3,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Post",
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.0),
+                ),
+              ),
+              profileColumn(),
+              Expanded(
+                child: Card(
+                  elevation: 2.0,
+                  child: Image.network(
+                    urlImage,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  Widget followColumn(Size deviceSize) => Container(
+        height: deviceSize.height * 0.13,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            ProfileTile(
+              title: post,
+              subtitle: "Posts",
+            ),
+            FlutterSwitch(
+              width: 125.0,
+              height: 55.0,
+              valueFontSize: 25.0,
+              toggleSize: 45.0,
+              value: status,
+              borderRadius: 30.0,
+              padding: 8.0,
+              activeColor: Colors.blueAccent,
+              showOnOff: true,
+              onToggle: (val) {
+                setState(() {
+                  status = val;
+                  if (status == true) {
+                    statusSeller = "1";
+                  } else {
+                    statusSeller = "0";
+                  }
+                  PostStatus.postStatusSeller(statusSeller, token)
+                      .then((value) {
+                    print(value);
+                  });
+                });
+              },
+            ),
+            ProfileTile(
+              title: favorite,
+              subtitle: "Followers",
+            ),
+          ],
+        ),
+      );
+  Widget bodyData() => SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            profileHeader(),
+            followColumn(deviceSize),
+            imagesCard(),
+            postCard(
+                'https://www.foodsafetynews.com/files/2020/05/World-Food-Safety-1.jpg'),
+            postCard(
+                'https://www.reachsummit.co.za/wp-content/uploads/2020/03/Summit_CheckingItsSafe.jpg')
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    deviceSize = MediaQuery.of(context).size;
+    return CommonScaffold(
+      bodyData: bodyData(),
+      elevation: 0.0,
     );
+  }
+
+  void getUserStatus() {
+    if (getBerdagang.data != null) {
+      if (getBerdagang.status == 200) {
+        nama_seller = getBerdagang.data.seller.namaSeller;
+        kategori = getBerdagang.data.seller.kategori;
+        if (getBerdagang.data.seller.status == '1') {
+          status = true;
+        } else {
+          status = false;
+        }
+        favorite = getBerdagang.data.favorite.toString();
+        post = getBerdagang.data.post.toString();
+      } else {
+        Fluttertoast.showToast(
+            msg: getBerdagang.message,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.greenAccent,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    } else {
+      print("null");
+    }
   }
 }

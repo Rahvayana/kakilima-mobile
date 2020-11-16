@@ -11,7 +11,7 @@ class Check extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Test App',
+      title: 'KakiLima',
       debugShowCheckedModeBanner: false,
       home: CheckAuth(),
     );
