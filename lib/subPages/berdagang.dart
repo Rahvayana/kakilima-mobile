@@ -1,5 +1,6 @@
 import 'package:aplikasi_pertama/network/getResponse/GetBerdagang.dart';
 import 'package:aplikasi_pertama/network/postResponse/postStatus.dart';
+import 'package:aplikasi_pertama/subPages/Posts.dart';
 import 'package:aplikasi_pertama/subPages/profile_berdagang.dart';
 import 'package:aplikasi_pertama/widgets/common_scaffold.dart';
 import 'package:aplikasi_pertama/widgets/profile_tile.dart';
@@ -71,14 +72,20 @@ class _BerdagangState extends State<Berdagang> {
                         nama_seller,
                         style: TextStyle(color: Colors.white, fontSize: 20.0),
                       ),
-                      Text(
-                        kategori,
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      // Text(
+                      //   kategori,
+                      //   style: TextStyle(color: Colors.white),
+                      // ),
                       Row(
                         children: [
                           IconButton(
-                              icon: Icon(Icons.add_a_photo), onPressed: null),
+                              icon: Icon(Icons.add_a_photo),
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    new MaterialPageRoute(
+                                        builder: (context) => new Post()));
+                              }),
                           IconButton(
                             icon: Icon(Icons.person_add_alt_1),
                             onPressed: () {

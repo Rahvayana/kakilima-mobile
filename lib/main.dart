@@ -1,10 +1,18 @@
 import 'package:aplikasi_pertama/home.dart';
 import 'package:aplikasi_pertama/login.dart';
 import 'package:aplikasi_pertama/register/profile_register.dart';
+import 'package:aplikasi_pertama/seller/FormSeller.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 // void main() =>   runApp(MaterialApp(home: RegisterProfile()));
-void main() =>   runApp(Check());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  runApp(Check());
+}
 
 class Check extends StatelessWidget {
   // This widget is the root of your application.
@@ -31,15 +39,16 @@ class _CheckAuthState extends State<CheckAuth> {
     super.initState();
   }
 
-  void _checkIfLoggedIn() async{
+  void _checkIfLoggedIn() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var token = localStorage.getString('token');
-    if(token != null){
+    if (token != null) {
       setState(() {
         isAuth = true;
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     Widget child;

@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:aplikasi_pertama/network/postResponse/postFavorite.dart';
 import 'package:aplikasi_pertama/network/postResponse/postRating.dart';
 import 'package:aplikasi_pertama/network/postResponse/postReview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,7 +27,7 @@ class _MapsPageState extends State<MapsPage> {
   @override
   void initState() {
     getTokenLogin();
-    getCurrentLocation();
+    // getCurrentLocation();
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(devicePixelRatio: 2.5), 'images/marker.png')
         .then((onValue) {
@@ -108,7 +110,43 @@ class _MapsPageState extends State<MapsPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               buttonCircle(Icons.near_me, 'RUTE'),
-                              buttonCircle(Icons.favorite, 'FAVORITE'),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  MaterialButton(
+                                    onPressed: () {
+                                      PostFavorite.postStatusSeller(id, token)
+                                          .then((value) {
+                                        Fluttertoast.showToast(
+                                            msg: value.message,
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.BOTTOM,
+                                            timeInSecForIosWeb: 2,
+                                            backgroundColor: Colors.greenAccent,
+                                            textColor: Colors.white,
+                                            fontSize: 16.0);
+                                      });
+                                    },
+                                    color: Colors.blue,
+                                    textColor: Colors.white,
+                                    child: Icon(
+                                      Icons.favorite,
+                                      size: 15,
+                                    ),
+                                    padding: EdgeInsets.all(16),
+                                    shape: CircleBorder(),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 5.0),
+                                    child: Text(
+                                      'Favorite',
+                                      style:
+                                          GoogleFonts.openSans(fontSize: 12.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -289,22 +327,22 @@ class _MapsPageState extends State<MapsPage> {
     );
   }
 
-  getCurrentLocation() async {
-    final GoogleMapController controller = await _controller.future;
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      curLat = position.latitude.toDouble();
-      curLong = position.longitude.toDouble();
-    });
-    controller.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(
-        bearing: 0,
-        target: LatLng(curLat, curLong),
-        zoom: 17.0,
-      ),
-    ));
-  }
+  // getCurrentLocation() async {
+  //   final GoogleMapController controller = await _controller.future;
+  //   Position position = await Geolocator()
+  //       .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  //   setState(() {
+  //     curLat = position.latitude.toDouble();
+  //     curLong = position.longitude.toDouble();
+  //   });
+  //   controller.animateCamera(CameraUpdate.newCameraPosition(
+  //     CameraPosition(
+  //       bearing: 0,
+  //       target: LatLng(curLat, curLong),
+  //       zoom: 17.0,
+  //     ),
+  //   ));
+  // }
 }
 
 Column buttonCircle(IconData icon, String label) {

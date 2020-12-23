@@ -10,6 +10,8 @@ class Data {
   String deskripsi;
   String createdAt;
   String updatedAt;
+  double lat;
+  double lng;
   String judul;
 
   Data(
@@ -18,6 +20,8 @@ class Data {
       this.foto,
       this.deskripsi,
       this.judul,
+      this.lat,
+      this.lng,
       this.createdAt,
       this.updatedAt});
 
@@ -29,12 +33,20 @@ class Data {
         deskripsi: json['deskripsi'],
         createdAt: json['created_at'],
         updatedAt: json['updated_at'],
+        lat: json['latitude'],
+        lng: json['longitude'],
         judul: json['judul']);
     // id: map["id"], name: map["name"], email: map["email"], age: map["age"]
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "foto": foto, "deskripsi": deskripsi};
+    return {
+      "id": id,
+      "foto": foto,
+      "deskripsi": deskripsi,
+      "lat": lat,
+      "lng": lng
+    };
   }
 
   @override

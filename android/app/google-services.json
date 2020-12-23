@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "395980497698",
+    "firebase_url": "https://kakilima-10ee6.firebaseio.com",
+    "project_id": "kakilima-10ee6",
+    "storage_bucket": "kakilima-10ee6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:395980497698:android:be6cf760cebd9821807b7b",
+        "android_client_info": {
+          "package_name": "com.example.aplikasi_pertama"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "395980497698-8vguf595q7sdk7lb0b1isd79i0tit5l1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.aplikasi_pertama",
+            "certificate_hash": "a3a6341081a448e303e85fd6fc9d8557521a7af8"
+          }
+        },
+        {
+          "client_id": "395980497698-ai1tottvonsthga2jfmlrqvfktttsk6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0_-zGfv6A7JF0MqvjcGWcf_NGf6-8_88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "395980497698-ai1tottvonsthga2jfmlrqvfktttsk6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

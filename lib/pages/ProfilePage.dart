@@ -3,6 +3,8 @@ import 'package:aplikasi_pertama/login.dart';
 import 'package:aplikasi_pertama/network/api_login.dart';
 import 'package:aplikasi_pertama/network/getResponse/ProfilePageUser.dart';
 import 'package:aplikasi_pertama/subPages/berdagang.dart';
+import 'package:aplikasi_pertama/subPages/checkStatusBerdagang.dart';
+import 'package:aplikasi_pertama/subPages/favorite.dart';
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -97,7 +99,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             Navigator.push(
                                 context,
                                 new MaterialPageRoute(
-                                    builder: (context) => new Berdagang()));
+                                    builder: (context) =>
+                                        new CheckStatusBerdagang()));
                           },
                           trailing: Icon(Icons.arrow_forward_ios),
                         ),
@@ -105,14 +108,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           leading: Icon(Icons.favorite),
                           title: Text('Favorite'),
                           onTap: () {
-                            Fluttertoast.showToast(
-                                msg: 'Menu Favorite',
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.greenAccent,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
+                            Navigator.push(
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => new Favorites()));
                           },
                           trailing: Icon(Icons.arrow_forward_ios),
                         ),
@@ -259,12 +258,9 @@ class _ProfilePageState extends State<ProfilePage> {
     if (profilePageUser != null) {
       if (profilePageUser.status == 200) {
         urlFoto = profilePageUser.data.foto;
+        print(profilePageUser);
         namaProfil = profilePageUser.data.name;
-        if (profilePageUser.data.status == null) {
-          statusProfile = 'Pembeli';
-        } else {
-          statusProfile = 'Pedagang';
-        }
+        statusProfile = profilePageUser.data.status;
       } else {
         Fluttertoast.showToast(
             msg: profilePageUser.message,

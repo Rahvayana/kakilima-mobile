@@ -34,7 +34,7 @@ class ProfilePageUser {
 }
 
 class Data {
-  int status;
+  String status;
   String name;
   String foto;
 

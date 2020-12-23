@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String name, token;
+  double lat, lng;
   var imgUrl =
       'https://media.tabloidbintang.com/files/thumb/92bc280c3b0a6e1f22a2ba3cccdc82d7.jpg';
   var title = 'Pedagang Bakso';
@@ -120,9 +121,10 @@ class _HomePageState extends State<HomePage> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                                builder: (context) => MapScreen(
+                                                builder: (context) => MapView(
                                                     // data: navigasi,
-                                                    )),
+                                                    lat: profile.lat,
+                                                    lng: profile.lng)),
                                           )
                                         },
                                         color: Colors.white,

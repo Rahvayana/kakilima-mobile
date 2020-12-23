@@ -10,48 +10,54 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _currentIndex=0;
+  int _currentIndex = 0;
 
-  Widget callPage(int value){
+  Widget callPage(int value) {
     switch (value) {
-      case 0: return HomePage();
-      case 1: return MapsPage();
-      case 2: return ChatPage();
-      case 3: return ProfilePage();
+      case 0:
+        return HomePage();
+      case 1:
+        return MapsPage();
+      case 2:
+        return LoginScreen();
+      case 3:
+        return ProfilePage();
         break;
-      default : return HomePage();
+      default:
+        return HomePage();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         body: callPage(_currentIndex),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (value) {
-            setState(() {
-              _currentIndex=value;
-            });
-          },
-          items: [
-          BottomNavigationBarItem(
-              backgroundColor: Colors.blue,
-              icon: Icon(Icons.home),
-              title: Text("Home")),
-          BottomNavigationBarItem(
-              backgroundColor: Colors.red,
-              icon: Icon(Icons.map),
-              title: Text("Maps")),
-          BottomNavigationBarItem(
-              backgroundColor: Colors.purple,
-              icon: Icon(Icons.chat),
-              title: Text("Chat")),
-          BottomNavigationBarItem(
-              backgroundColor: Colors.green,
-              icon: Icon(Icons.person),
-              title: Text("Profile")),
-        ]),
+            currentIndex: _currentIndex,
+            onTap: (value) {
+              setState(() {
+                _currentIndex = value;
+              });
+            },
+            items: [
+              BottomNavigationBarItem(
+                  backgroundColor: Colors.blue,
+                  icon: Icon(Icons.home),
+                  title: Text("Home")),
+              BottomNavigationBarItem(
+                  backgroundColor: Colors.red,
+                  icon: Icon(Icons.map),
+                  title: Text("Maps")),
+              BottomNavigationBarItem(
+                  backgroundColor: Colors.purple,
+                  icon: Icon(Icons.chat),
+                  title: Text("Chat")),
+              BottomNavigationBarItem(
+                  backgroundColor: Colors.green,
+                  icon: Icon(Icons.person),
+                  title: Text("Profile")),
+            ]),
       ),
     );
   }

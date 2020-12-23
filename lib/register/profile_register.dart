@@ -415,9 +415,19 @@ class _RegisterProfileState extends State<RegisterProfile> {
                           onPressed: () {
                             if (_formKey.currentState.validate()) {
                               // submitProfile();
-                              SubmitProfileResponse.submitProfile(nama, email, formatter.format(tgl_lahir),alamat, provinsi, kota, kecamatan, password, no_hp).then((value){
+                              SubmitProfileResponse.submitProfile(
+                                      nama,
+                                      email,
+                                      formatter.format(tgl_lahir),
+                                      alamat,
+                                      provinsi,
+                                      kota,
+                                      kecamatan,
+                                      password,
+                                      no_hp)
+                                  .then((value) {
                                 setState(() {
-                                  submitProfileResponse=value;
+                                  submitProfileResponse = value;
                                   checkResponse();
                                 });
                               });
@@ -441,10 +451,11 @@ class _RegisterProfileState extends State<RegisterProfile> {
     if (submitProfileResponse != null) {
       if (submitProfileResponse.status == 200) {
         Navigator.pop(context);
-        print(submitProfileResponse.message+" - "+submitProfileResponse.status.toString());
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) =>
-                Login()));
+        print(submitProfileResponse.message +
+            " - " +
+            submitProfileResponse.status.toString());
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Login()));
       } else {
         Navigator.pop(context);
         Fluttertoast.showToast(
@@ -459,21 +470,23 @@ class _RegisterProfileState extends State<RegisterProfile> {
     }
   }
 
-  showAlertDialog(BuildContext context){
-  AlertDialog alert=AlertDialog(
-    content: new Row(
+  showAlertDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: new Row(
         children: [
-           CircularProgressIndicator(),
-           Container(margin: EdgeInsets.only(left: 5),child:Text("Loading" )),
-        ],),
-  );
-  showDialog(barrierDismissible: false,
-    context:context,
-    builder:(BuildContext context){
-      return alert;
-    },
-  );
-}
+          CircularProgressIndicator(),
+          Container(margin: EdgeInsets.only(left: 5), child: Text("Loading")),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   chooseImage() {
     setState(() {
@@ -518,5 +531,4 @@ class _RegisterProfileState extends State<RegisterProfile> {
       },
     );
   }
-
 }
