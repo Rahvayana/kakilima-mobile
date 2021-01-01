@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:aplikasi_pertama/network/postResponse/postFavorite.dart';
 import 'package:aplikasi_pertama/network/postResponse/postRating.dart';
 import 'package:aplikasi_pertama/network/postResponse/postReview.dart';
+import 'package:aplikasi_pertama/subPages/RuteNavigasi.dart';
+import 'package:aplikasi_pertama/utils/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -19,9 +21,11 @@ class MapsPage extends StatefulWidget {
 }
 
 class _MapsPageState extends State<MapsPage> {
-  var curLat = -7.113943, curLong = 112.408368;
+  var curLat, curLong;
   var ulasan = TextEditingController();
+  Position position;
   String token;
+  final Geolocator geolocator = Geolocator();
   // var curLat, curLong;
   Completer<GoogleMapController> _controller = Completer();
   @override
@@ -32,6 +36,16 @@ class _MapsPageState extends State<MapsPage> {
             ImageConfiguration(devicePixelRatio: 2.5), 'images/marker.png')
         .then((onValue) {
       pinLocationIcon = onValue;
+    });
+    getCurLoc();
+  }
+
+  getCurLoc() async {
+    position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      curLat = position.latitude;
+      curLong = position.longitude;
     });
   }
 
@@ -109,7 +123,40 @@ class _MapsPageState extends State<MapsPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              buttonCircle(Icons.near_me, 'RUTE'),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  MaterialButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => MapView(
+                                                // data: navigasi,
+                                                lat: lat,
+                                                lng: long)),
+                                      );
+                                    },
+                                    color: Colors.blue,
+                                    textColor: Colors.white,
+                                    child: Icon(
+                                      Icons.near_me,
+                                      size: 15,
+                                    ),
+                                    padding: EdgeInsets.all(16),
+                                    shape: CircleBorder(),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 5.0),
+                                    child: Text(
+                                      'Rute',
+                                      style:
+                                          GoogleFonts.openSans(fontSize: 12.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -141,6 +188,39 @@ class _MapsPageState extends State<MapsPage> {
                                     margin: EdgeInsets.only(top: 5.0),
                                     child: Text(
                                       'Favorite',
+                                      style:
+                                          GoogleFonts.openSans(fontSize: 12.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  MaterialButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Chat(
+                                                    peerId: id.toString(),
+                                                    peerAvatar: img,
+                                                  )));
+                                    },
+                                    color: Colors.blue,
+                                    textColor: Colors.white,
+                                    child: Icon(
+                                      Icons.mail,
+                                      size: 15,
+                                    ),
+                                    padding: EdgeInsets.all(16),
+                                    shape: CircleBorder(),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 5.0),
+                                    child: Text(
+                                      'Message',
                                       style:
                                           GoogleFonts.openSans(fontSize: 12.0),
                                     ),
@@ -309,6 +389,7 @@ class _MapsPageState extends State<MapsPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: curLat == null || curLong == null
             ? Container()

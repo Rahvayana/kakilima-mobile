@@ -22,17 +22,13 @@ class Chat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'CHAT',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomPadding: false,
+        body: ChatScreen(
+          peerId: peerId,
+          peerAvatar: peerAvatar,
         ),
-        centerTitle: true,
-      ),
-      body: ChatScreen(
-        peerId: peerId,
-        peerAvatar: peerAvatar,
       ),
     );
   }
@@ -473,24 +469,27 @@ class ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      child: Stack(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              // List of messages
-              buildListMessage(),
+      child: Scaffold(
+        resizeToAvoidBottomPadding: false,
+        body: Stack(
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+                // List of messages
+                buildListMessage(),
 
-              // Sticker
-              (isShowSticker ? buildSticker() : Container()),
+                // Sticker
+                (isShowSticker ? buildSticker() : Container()),
 
-              // Input content
-              buildInput(),
-            ],
-          ),
+                // Input content
+                buildInput(),
+              ],
+            ),
 
-          // Loading
-          buildLoading()
-        ],
+            // Loading
+            buildLoading()
+          ],
+        ),
       ),
       onWillPop: onBackPress,
     );
@@ -615,63 +614,67 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildInput() {
     return Container(
-      child: Row(
-        children: <Widget>[
-          // Button send image
-          Material(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 1.0),
-              child: IconButton(
-                icon: Icon(Icons.image),
-                onPressed: getImage,
-                color: primaryColor,
-              ),
-            ),
-            color: Colors.white,
-          ),
-          Material(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 1.0),
-              child: IconButton(
-                icon: Icon(Icons.face),
-                onPressed: getSticker,
-                color: primaryColor,
-              ),
-            ),
-            color: Colors.white,
-          ),
-
-          // Edit text
-          Flexible(
-            child: Container(
-              child: TextField(
-                onSubmitted: (value) {
-                  onSendMessage(textEditingController.text, 0);
-                },
-                style: TextStyle(color: primaryColor, fontSize: 15.0),
-                controller: textEditingController,
-                decoration: InputDecoration.collapsed(
-                  hintText: 'Type your message...',
-                  hintStyle: TextStyle(color: greyColor),
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomPadding: false,
+        body: Row(
+          children: <Widget>[
+            // Button send image
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.image),
+                  onPressed: getImage,
+                  color: primaryColor,
                 ),
-                focusNode: focusNode,
               ),
+              color: Colors.white,
             ),
-          ),
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 1.0),
+                child: IconButton(
+                  icon: Icon(Icons.face),
+                  onPressed: getSticker,
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
 
-          // Button send message
-          Material(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 8.0),
-              child: IconButton(
-                icon: Icon(Icons.send),
-                onPressed: () => onSendMessage(textEditingController.text, 0),
-                color: primaryColor,
+            // Edit text
+            Flexible(
+              child: Container(
+                child: TextField(
+                  onSubmitted: (value) {
+                    onSendMessage(textEditingController.text, 0);
+                  },
+                  style: TextStyle(color: primaryColor, fontSize: 15.0),
+                  controller: textEditingController,
+                  decoration: InputDecoration.collapsed(
+                    hintText: 'Type your message...',
+                    hintStyle: TextStyle(color: greyColor),
+                  ),
+                  focusNode: focusNode,
+                ),
               ),
             ),
-            color: Colors.white,
-          ),
-        ],
+
+            // Button send message
+            Material(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 8.0),
+                child: IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () => onSendMessage(textEditingController.text, 0),
+                  color: primaryColor,
+                ),
+              ),
+              color: Colors.white,
+            ),
+          ],
+        ),
       ),
       width: double.infinity,
       height: 50.0,

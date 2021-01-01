@@ -46,14 +46,14 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     // Build a Form widget using the _formKey created above.
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       key: _scaffoldKey,
       home: Scaffold(
-        resizeToAvoidBottomPadding: false,
-        body: Container(
+        body: SingleChildScrollView(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SingleChildScrollView(
+              Container(
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -205,23 +205,18 @@ class _LoginState extends State<Login> {
   }
 
   void _login() async {
-    showAlertDialog(context);
-    setState(() {
-      _isLoading = true;
-    });
+    // showAlertDialog(context);
     var data = {'email': email, 'password': password};
     var res = await Network().authData(data, 'api/login');
     var body = json.decode(res.body);
     if (body['status'] == "200") {
       SharedPreferences localStorage = await SharedPreferences.getInstance();
       localStorage.setString('token', json.encode(body['token']));
-      Navigator.pop(context);
       Navigator.pushAndRemoveUntil(
           context,
           new MaterialPageRoute(builder: (context) => MyApp()),
           (Route<dynamic> route) => false);
     } else {
-      Navigator.pop(context);
       // _showMsg(body['message']);
       // print();
       Fluttertoast.showToast(
@@ -233,10 +228,6 @@ class _LoginState extends State<Login> {
           textColor: Colors.white,
           fontSize: 16.0);
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   showAlertDialog(BuildContext context) {

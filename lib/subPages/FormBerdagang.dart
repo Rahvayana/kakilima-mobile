@@ -112,20 +112,26 @@ class _FormBerdagangState extends State<FormBerdagang> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward_ios),
-                          iconSize: 50,
+                        MaterialButton(
+                          minWidth: 200.0,
+                          height: 42.0,
                           onPressed: () {
                             PostSellerBody.postSellerBody(nama_seller.text,
                                     deskripsi.text, lat, long, token)
                                 .then((value) {
                               print(value);
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                   context,
                                   new MaterialPageRoute(
                                       builder: (context) => new Berdagang()));
                             });
                           },
+                          color: Colors.blue,
+                          child: Text(
+                            'Register Berdagang',
+                            style: TextStyle(color: Colors.white),
+                            textAlign: TextAlign.left,
+                          ),
                         ),
                       ],
                     )

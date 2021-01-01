@@ -42,76 +42,92 @@ class _PostState extends State<Post> {
             width: MediaQuery.of(context).size.width,
             margin: EdgeInsets.all(10.0),
             child: SingleChildScrollView(
-              child: Container(
-                child: Column(
-                  children: <Widget>[
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          _showPicker(context);
-                        },
-                        child: Container(
-                          width: 200,
-                          child: selectedImage != null
-                              ? ClipRRect(
-                                  // borderRadius: BorderRadius.circular(50),
-                                  child: Image.file(
-                                    selectedImage,
-                                    fit: BoxFit.fitHeight,
-                                  ),
-                                )
-                              : Container(
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    // borderRadius: BorderRadius.circular(50)
-                                  ),
-                                  child: Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.grey[800],
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-                    TextFormField(
-                      controller: judul,
-                      decoration: InputDecoration(
-                        labelText: 'Judul',
-                      ),
-                    ),
-                    TextFormField(
-                      controller: deskripsi,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: 'Deskripsi',
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward_ios),
-                          iconSize: 50,
-                          onPressed: () {
-                            Service service = Service();
-                            service.submitSubscription(
-                              file: selectedImage,
-                              filename: filename,
-                              judul: judul.text,
-                              deskripsi: deskripsi.text,
-                              token: token,
-                            );
-                            Navigator.pushReplacement(
-                              context,
-                              new MaterialPageRoute(
-                                  builder: (context) => new Berdagang()),
-                            );
+              child: Card(
+                elevation: 5,
+                child: Container(
+                  padding: EdgeInsets.all(10.0),
+                  child: Column(
+                    children: <Widget>[
+                      Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            _showPicker(context);
                           },
+                          child: Container(
+                            width: 200,
+                            child: selectedImage != null
+                                ? ClipRRect(
+                                    // borderRadius: BorderRadius.circular(50),
+                                    child: Image.file(
+                                      selectedImage,
+                                      fit: BoxFit.fitHeight,
+                                    ),
+                                  )
+                                : Container(
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      // borderRadius: BorderRadius.circular(50)
+                                    ),
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                          ),
                         ),
-                      ],
-                    )
-                  ],
+                      ),
+                      TextFormField(
+                        controller: judul,
+                        decoration: InputDecoration(
+                          labelText: 'Judul',
+                        ),
+                      ),
+                      TextFormField(
+                        controller: deskripsi,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          labelText: 'Deskripsi',
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          MaterialButton(
+                            minWidth: 200.0,
+                            height: 42.0,
+                            onPressed: () {
+                              Service service = Service();
+                              service
+                                  .submitSubscription(
+                                file: selectedImage,
+                                filename: filename,
+                                judul: judul.text,
+                                deskripsi: deskripsi.text,
+                                token: token,
+                              )
+                                  .then((value) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) => new Berdagang()),
+                                );
+                              });
+                            },
+                            color: Colors.blue,
+                            child: Text(
+                              'Submit Post',
+                              style: TextStyle(color: Colors.white),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             )),
@@ -134,14 +150,14 @@ class _PostState extends State<Post> {
                         _imgFromGallery();
                         Navigator.of(context).pop();
                       }),
-                  new ListTile(
-                    leading: new Icon(Icons.photo_camera),
-                    title: new Text('Camera'),
-                    onTap: () {
-                      _imgFromCamera();
-                      Navigator.of(context).pop();
-                    },
-                  ),
+                  // new ListTile(
+                  //   leading: new Icon(Icons.photo_camera),
+                  //   title: new Text('Camera'),
+                  //   onTap: () {
+                  //     _imgFromCamera();
+                  //     Navigator.of(context).pop();
+                  //   },
+                  // ),
                 ],
               ),
             ),

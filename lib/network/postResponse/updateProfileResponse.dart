@@ -5,18 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
-class SubmitProfileResponse {
+class UpdateProfileResponse {
   String message;
   int status;
 
-  SubmitProfileResponse({this.message, this.status});
-  factory SubmitProfileResponse.submitProfileUser(Map<String, dynamic> object) {
-    return SubmitProfileResponse(
+  UpdateProfileResponse({this.message, this.status});
+  factory UpdateProfileResponse.submitProfileUser(Map<String, dynamic> object) {
+    return UpdateProfileResponse(
       status: object['status'],
       message: object['message'],
     );
   }
-  static Future<SubmitProfileResponse> submitProfile(
+  static Future<UpdateProfileResponse> submitProfile(
       String name,
       String email,
       String tgl_lahir,
@@ -26,17 +26,14 @@ class SubmitProfileResponse {
       String kecamatan,
       String password,
       String no_hp) async {
-    String url = "https://api-kakilima.herokuapp.com/api/register/addprofil";
+    String url = "https://api-kakilima.herokuapp.com/api/register/updateprofil";
     var apiResult = await http.post(url, body: {
       "name": name,
-      "email": email,
       "tgl_lahir": tgl_lahir,
       "alamat": alamat,
       "provinsi": provinsi,
       "kota": kota,
       "kecamatan": kecamatan,
-      "password": password,
-      "no_hp": no_hp,
     });
     var jsonObject = json.decode(apiResult.body);
     final QuerySnapshot result = await FirebaseFirestore.instance
@@ -57,27 +54,25 @@ class SubmitProfileResponse {
         'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
         'chattingWith': null
       });
-      return SubmitProfileResponse.submitProfileUser(jsonObject);
+      return UpdateProfileResponse.submitProfileUser(jsonObject);
     }
   }
 }
 
-class ServiceProfile {
+class UpdateProfile {
   List data;
-  Future<int> submitSubscription(
-      {File file,
-      Uri filename,
-      String name,
-      String email,
-      String tgl_lahir,
-      String alamat,
-      String provinsi,
-      String kota,
-      String kecamatan,
-      String password,
-      String no_hp}) async {
+  Future<int> submitSubscription({
+    File file,
+    Uri filename,
+    String name,
+    String tgl_lahir,
+    String alamat,
+    String provinsi,
+    String kota,
+    String kecamatan,
+  }) async {
     final StringBuffer url = new StringBuffer(
-        "https://api-kakilima.herokuapp.com/api/register/addprofil");
+        "https://api-kakilima.herokuapp.com/api/register/updateprofil");
 
     Dio dio = new Dio();
     try {
@@ -85,14 +80,11 @@ class ServiceProfile {
         {
           "foto": await MultipartFile.fromFile(file.path),
           "name": name,
-          "email": email,
           "tgl_lahir": tgl_lahir,
           "alamat": alamat,
           "provinsi": provinsi,
           "kota": kota,
           "kecamatan": kecamatan,
-          "password": password,
-          "no_hp": no_hp,
         },
       );
       print(url);

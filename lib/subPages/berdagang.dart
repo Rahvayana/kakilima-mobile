@@ -1,9 +1,11 @@
 import 'package:aplikasi_pertama/network/getResponse/GetBerdagang.dart';
+import 'package:aplikasi_pertama/network/getResponse/GetPost.dart';
 import 'package:aplikasi_pertama/network/postResponse/postStatus.dart';
 import 'package:aplikasi_pertama/subPages/Posts.dart';
-import 'package:aplikasi_pertama/subPages/profile_berdagang.dart';
+import 'package:aplikasi_pertama/subPages/profileBerdagang.dart';
 import 'package:aplikasi_pertama/widgets/common_scaffold.dart';
 import 'package:aplikasi_pertama/widgets/profile_tile.dart';
+import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -21,9 +23,12 @@ class _BerdagangState extends State<Berdagang> {
   var kategori = '', nama_seller = '', favorite = '', post = '';
   bool status = false;
   String statusSeller;
+  GetPost getPost;
+
   @override
   void initState() {
     getTokenLogin();
+    getPost = GetPost();
     super.initState();
   }
 
@@ -106,37 +111,6 @@ class _BerdagangState extends State<Berdagang> {
           ),
         ),
       );
-  Widget imagesCard() => Container(
-        height: deviceSize.height / 6,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Followers",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.0),
-                ),
-              ),
-              Expanded(
-                child: Card(
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5,
-                    itemBuilder: (context, i) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.network(
-                          "https://cdn.pixabay.com/photo/2016/10/31/18/14/ice-1786311_960_720.jpg"),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
 
   Widget profileColumn() => Padding(
         padding: const EdgeInsets.all(8.0),
@@ -167,36 +141,6 @@ class _BerdagangState extends State<Berdagang> {
               ),
             ))
           ],
-        ),
-      );
-
-  Widget postCard(String urlImage) => Container(
-        width: double.infinity,
-        height: deviceSize.height / 3,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Post",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.0),
-                ),
-              ),
-              profileColumn(),
-              Expanded(
-                child: Card(
-                  elevation: 2.0,
-                  child: Image.network(
-                    urlImage,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       );
   Widget followColumn(Size deviceSize) => Container(
@@ -240,25 +184,65 @@ class _BerdagangState extends State<Berdagang> {
           ],
         ),
       );
-  Widget bodyData() => SingleChildScrollView(
+
+  @override
+  Widget build(BuildContext context) {
+    GetPost().getProfiles(token).then((value) => print("value: $value"));
+    deviceSize = MediaQuery.of(context).size;
+    return CommonScaffold(
+      bodyData: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             profileHeader(),
             followColumn(deviceSize),
-            imagesCard(),
-            postCard(
-                'https://www.foodsafetynews.com/files/2020/05/World-Food-Safety-1.jpg'),
-            postCard(
-                'https://www.reachsummit.co.za/wp-content/uploads/2020/03/Summit_CheckingItsSafe.jpg')
+            SizedBox(
+              width: double.infinity,
+              child: Material(
+                borderRadius: BorderRadius.circular(30.0),
+                shadowColor: Colors.lightBlueAccent.shade100,
+                elevation: 5.0,
+                child: MaterialButton(
+                  minWidth: 200.0,
+                  height: 42.0,
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ProfileBerdagang(),
+                    ));
+                  },
+                  color: Colors.blue,
+                  child: Text(
+                    'Ganti Profil Berdagang',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            FutureBuilder(
+              future: getPost.getProfiles(token),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Datapost>> snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                        "Something wrong with message: ${snapshot.error.toString()}"),
+                  );
+                } else if (snapshot.connectionState == ConnectionState.done) {
+                  List<Datapost> profiles = snapshot.data;
+                  return _buildListView(profiles);
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+            ),
           ],
         ),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    deviceSize = MediaQuery.of(context).size;
-    return CommonScaffold(
-      bodyData: bodyData(),
+      ),
       elevation: 0.0,
     );
   }
@@ -288,5 +272,86 @@ class _BerdagangState extends State<Berdagang> {
     } else {
       print("null");
     }
+  }
+
+  Widget _buildListView(List<Datapost> profiles) {
+    return profiles.length != 0
+        ? RefreshIndicator(
+            child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                Datapost profile = profiles[index];
+                print(profile.foto);
+                return Container(
+                  child: Container(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Card(
+                          child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              child: Container(
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  alignment: Alignment.bottomCenter,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                          bottomRight: Radius.circular(6),
+                                          bottomLeft: Radius.circular(6))),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          child: Image.network(
+                                            profile.foto,
+                                            height: 250,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            fit: BoxFit.cover,
+                                          )),
+                                      SizedBox(
+                                        height: 12,
+                                      ),
+                                      SizedBox(
+                                        height: 4,
+                                      ),
+                                      ExpandablePanel(
+                                        header: Text(profile.judul),
+                                        collapsed: Text(
+                                          profile.deskripsi,
+                                          softWrap: true,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        expanded: Text(
+                                          profile.deskripsi,
+                                          textAlign: TextAlign.justify,
+                                          softWrap: true,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 10.0,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              itemCount: profiles.length,
+            ),
+            onRefresh: () => getPost.getProfiles(token),
+          )
+        : Center(child: CircularProgressIndicator());
   }
 }

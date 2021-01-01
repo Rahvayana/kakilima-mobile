@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:aplikasi_pertama/network/Navigasi.dart';
+import 'package:aplikasi_pertama/network/api_login.dart';
 import 'package:aplikasi_pertama/network/getResponse/getHome.dart';
 import 'package:aplikasi_pertama/subPages/RuteNavigasi.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String name, token;
+  String token, currentUserId;
   double lat, lng;
   var imgUrl =
       'https://media.tabloidbintang.com/files/thumb/92bc280c3b0a6e1f22a2ba3cccdc82d7.jpg';
@@ -21,11 +26,79 @@ class _HomePageState extends State<HomePage> {
   final navigasi =
       Navigasi(name: "Pedagang Bakso", lat: -7.052299, lng: 112.425674);
   GetHome getHome;
+  var id, name, foto;
+  SharedPreferences prefs;
   @override
   void initState() {
     getTokenLogin();
+    handleSignIn();
     getHome = GetHome();
     super.initState();
+  }
+
+  Future<Null> handleSignIn() async {
+    print('Jalankok');
+    prefs = await SharedPreferences.getInstance();
+    var res = await Network().getData('api/apps/user');
+    var body = json.decode(res.body);
+
+    if (body['status'] == 200) {
+      // print();
+      setState(() {
+        id = json.encode(body['data']['user']['id']);
+        currentUserId = json.encode(body['data']['user']['id']);
+        name = json.encode(body['data']['user']['name']);
+        foto = json.encode(body['data']['user']['foto']);
+      });
+      print(currentUserId);
+    } else {
+      Fluttertoast.showToast(
+          msg: body['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.greenAccent,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
+
+    if (id != null) {
+      // Check is already sign up
+      final QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('users')
+          .where('id', isEqualTo: id)
+          .get();
+      final List<DocumentSnapshot> documents = result.docs;
+      if (documents.length == 0) {
+        // Update data to server if new user
+        String fotoku = foto.replaceAll(new RegExp('"'), '');
+
+        FirebaseFirestore.instance.collection('users').doc(id).set({
+          'nickname': name,
+          'photoUrl': fotoku,
+          'id': id,
+          'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
+          'chattingWith': null
+        });
+        await prefs.setString('id', id);
+        await prefs.setString('nickname', name);
+        await prefs.setString('photoUrl', fotoku);
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //         builder: (context) => HomeScreen(currentUserId: id)));
+      }
+      await prefs.setString('id', id);
+      await prefs.setString('nickname', name);
+      String fotoku = foto.replaceAll(new RegExp('"'), '');
+      await prefs.setString('photoUrl', fotoku);
+      // Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //         builder: (context) => HomeScreen(currentUserId: id)));
+    } else {
+      Fluttertoast.showToast(msg: "Sign in fail");
+    }
   }
 
   getTokenLogin() async {
@@ -90,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                                               BorderRadius.circular(6),
                                           child: Image.network(
                                             profile.foto,
-                                            height: 200,
+                                            height: 250,
                                             width: MediaQuery.of(context)
                                                 .size
                                                 .width,

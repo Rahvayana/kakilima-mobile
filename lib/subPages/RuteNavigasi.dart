@@ -67,26 +67,30 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldkey,
-      body: GoogleMap(
-        mapType: MapType.normal,
-        polylines: _polyline,
-        myLocationEnabled: true,
-        onCameraIdle: () {
-          print('camera stop');
-        },
-        initialCameraPosition: CameraPosition(
-            target:
-                LatLng(_currentPosition.latitude, _currentPosition.longitude),
-            zoom: 14),
-        onMapCreated: (GoogleMapController controller) {
-          _mapController.complete(controller);
-          _getPoliLine();
-        },
-        markers: _markers,
-      ),
-    );
+    if (_currentPosition != null) {
+      return Scaffold(
+        key: _scaffoldkey,
+        body: GoogleMap(
+          mapType: MapType.normal,
+          polylines: _polyline,
+          myLocationEnabled: true,
+          onCameraIdle: () {
+            print('camera stop');
+          },
+          initialCameraPosition: CameraPosition(
+              target:
+                  LatLng(_currentPosition.latitude, _currentPosition.longitude),
+              zoom: 14),
+          onMapCreated: (GoogleMapController controller) {
+            _mapController.complete(controller);
+            _getPoliLine();
+          },
+          markers: _markers,
+        ),
+      );
+    } else {
+      return Center(child: CircularProgressIndicator());
+    }
   }
 
   Future<dynamic> _getPoliLine() {

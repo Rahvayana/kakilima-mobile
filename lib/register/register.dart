@@ -140,6 +140,7 @@ class _RegisterState extends State<Register> {
   void checkResponse() {
     if (sendOtpResponse != null) {
       if (sendOtpResponse.status == 200) {
+        Navigator.pop(context);
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) =>
                 CheckOtp(sendOtpResponse.data.noHp.toString())));

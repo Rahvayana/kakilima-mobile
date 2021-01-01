@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aplikasi_pertama/network/api_login.dart';
 import 'package:aplikasi_pertama/pages/HomePage.dart';
 import 'package:aplikasi_pertama/utils/chat.dart';
 import 'package:aplikasi_pertama/utils/const.dart';
@@ -16,24 +17,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String currentUserId;
+  // final String currentUserId;
 
-  HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
+  // HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
-  State createState() => HomeScreenState(currentUserId: currentUserId);
+  State createState() => HomeScreenState();
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  HomeScreenState({Key key, @required this.currentUserId});
+  // HomeScreenState({Key key, @required this.currentUserId});
 
-  final String currentUserId;
+  String currentUserId;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   final GoogleSignIn googleSignIn = GoogleSignIn();
+  var id, name, foto;
+  SharedPreferences prefs;
 
   bool isLoading = false;
   List<Choice> choices = const <Choice>[
@@ -44,84 +48,145 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    registerNotification();
-    configLocalNotification();
-  }
+    // registerNotification();
+    // configLocalNotification();
+    Future<Null> handleSignIn() async {
+      prefs = await SharedPreferences.getInstance();
+      var res = await Network().getData('api/apps/user');
+      var body = json.decode(res.body);
 
-  void registerNotification() {
-    firebaseMessaging.requestNotificationPermissions();
+      if (body['status'] == 200) {
+        // print();
+        setState(() {
+          id = json.encode(body['data']['user']['id']);
+          currentUserId = json.encode(body['data']['user']['id']);
+          name = json.encode(body['data']['user']['name']);
+          foto = json.encode(body['data']['user']['foto']);
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: body['message'],
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.greenAccent,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
 
-    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print('onMessage: $message');
-      Platform.isAndroid
-          ? showNotification(message['notification'])
-          : showNotification(message['aps']['alert']);
-      return;
-    }, onResume: (Map<String, dynamic> message) {
-      print('onResume: $message');
-      return;
-    }, onLaunch: (Map<String, dynamic> message) {
-      print('onLaunch: $message');
-      return;
-    });
-
-    firebaseMessaging.getToken().then((token) {
-      print('token: $token');
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUserId)
-          .update({'pushToken': token});
-    }).catchError((err) {
-      Fluttertoast.showToast(msg: err.message.toString());
-    });
-  }
-
-  void configLocalNotification() {
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('ic_launcher');
-    var initializationSettingsIOS = new IOSInitializationSettings();
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
-  void onItemMenuPress(Choice choice) {
-    if (choice.title == 'Log out') {
-      handleSignOut();
-    } else {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => ChatSettings()));
+      if (id != null) {
+        // Check is already sign up
+        final QuerySnapshot result = await FirebaseFirestore.instance
+            .collection('users')
+            .where('id', isEqualTo: id)
+            .get();
+        final List<DocumentSnapshot> documents = result.docs;
+        if (documents.length == 0) {
+          // Update data to server if new user
+          FirebaseFirestore.instance.collection('users').doc(id).set({
+            'nickname': name,
+            'photoUrl': foto,
+            'id': id,
+            'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
+            'chattingWith': null
+          });
+          await prefs.setString('id', id);
+          await prefs.setString('nickname', name);
+          String fotoku = foto.replaceAll(new RegExp('"'), '');
+          await prefs.setString('photoUrl', fotoku);
+          // Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //         builder: (context) => HomeScreen(currentUserId: id)));
+        }
+        await prefs.setString('id', id);
+        await prefs.setString('nickname', name);
+        String fotoku = foto.replaceAll(new RegExp('"'), '');
+        await prefs.setString('photoUrl', fotoku);
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //         builder: (context) => HomeScreen(currentUserId: id)));
+      } else {
+        Fluttertoast.showToast(msg: "Sign in fail");
+      }
     }
   }
 
-  void showNotification(message) async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid
-          ? 'com.example.aplikasi_pertama'
-          : 'com.example.aplikasi_pertama',
-      'Flutter chat demo',
-      'your channel description',
-      playSound: true,
-      enableVibration: true,
-      importance: Importance.Max,
-      priority: Priority.High,
-    );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  // void registerNotification() {
+  //   firebaseMessaging.requestNotificationPermissions();
 
-    print(message);
-//    print(message['body'].toString());
-//    print(json.encode(message));
+  //   firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+  //     print('onMessage: $message');
+  //     Platform.isAndroid
+  //         ? showNotification(message['notification'])
+  //         : showNotification(message['aps']['alert']);
+  //     return;
+  //   }, onResume: (Map<String, dynamic> message) {
+  //     print('onResume: $message');
+  //     return;
+  //   }, onLaunch: (Map<String, dynamic> message) {
+  //     print('onLaunch: $message');
+  //     return;
+  //   });
 
-    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
-        message['body'].toString(), platformChannelSpecifics,
-        payload: json.encode(message));
+  //   firebaseMessaging.getToken().then((token) {
+  //     print('token: $token');
+  //     FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(currentUserId)
+  //         .update({'pushToken': token});
+  //   }).catchError((err) {
+  //     Fluttertoast.showToast(msg: err.message.toString());
+  //   });
+  // }
 
-//    await flutterLocalNotificationsPlugin.show(
-//        0, 'plain title', 'plain body', platformChannelSpecifics,
-//        payload: 'item x');
-  }
+  // void configLocalNotification() {
+  //   var initializationSettingsAndroid =
+  //       new AndroidInitializationSettings('ic_launcher');
+  //   var initializationSettingsIOS = new IOSInitializationSettings();
+  //   var initializationSettings = new InitializationSettings(
+  //       initializationSettingsAndroid, initializationSettingsIOS);
+  //   flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // }
+
+  // void onItemMenuPress(Choice choice) {
+  //   if (choice.title == 'Log out') {
+  //     handleSignOut();
+  //   } else {
+  //     Navigator.push(
+  //         context, MaterialPageRoute(builder: (context) => ChatSettings()));
+  //   }
+  // }
+
+//   void showNotification(message) async {
+//     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+//       Platform.isAndroid
+//           ? 'com.example.aplikasi_pertama'
+//           : 'com.example.aplikasi_pertama',
+//       'Flutter chat demo',
+//       'your channel description',
+//       playSound: true,
+//       enableVibration: true,
+//       importance: Importance.Max,
+//       priority: Priority.High,
+//     );
+//     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+//     var platformChannelSpecifics = new NotificationDetails(
+//         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+//     print(message);
+// //    print(message['body'].toString());
+// //    print(json.encode(message));
+
+//     await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+//         message['body'].toString(), platformChannelSpecifics,
+//         payload: json.encode(message));
+
+// //    await flutterLocalNotificationsPlugin.show(
+// //        0, 'plain title', 'plain body', platformChannelSpecifics,
+// //        payload: 'item x');
+//   }
 
   Future<Null> handleSignOut() async {
     // this.setState(() {
@@ -188,6 +253,10 @@ class HomeScreenState extends State<HomeScreen> {
     if (document.data()['id'] == currentUserId) {
       return Container();
     } else {
+      String fotoku =
+          document.data()['photoUrl'].replaceAll(new RegExp('"'), '');
+      String namaku =
+          document.data()['nickname'].replaceAll(new RegExp('"'), '');
       return Container(
         child: FlatButton(
           child: Row(
@@ -205,7 +274,7 @@ class HomeScreenState extends State<HomeScreen> {
                           height: 50.0,
                           padding: EdgeInsets.all(15.0),
                         ),
-                        imageUrl: document.data()['photoUrl'],
+                        imageUrl: fotoku,
                         width: 50.0,
                         height: 50.0,
                         fit: BoxFit.cover,
@@ -224,20 +293,12 @@ class HomeScreenState extends State<HomeScreen> {
                     children: <Widget>[
                       Container(
                         child: Text(
-                          'Nickname: ${document.data()['nickname']}',
+                          '$namaku',
                           style: TextStyle(color: primaryColor),
                         ),
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
                       ),
-                      Container(
-                        child: Text(
-                          'About me: ${document.data()['aboutMe'] ?? 'Not available'}',
-                          style: TextStyle(color: primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                      )
                     ],
                   ),
                   margin: EdgeInsets.only(left: 20.0),

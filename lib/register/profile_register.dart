@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterProfile extends StatefulWidget {
   @override
@@ -21,6 +22,14 @@ class RegisterProfile extends StatefulWidget {
 }
 
 class _RegisterProfileState extends State<RegisterProfile> {
+  getTokenLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String stringValue = prefs.getString('token');
+    setState(() {
+      token = stringValue;
+    });
+  }
+
   String something;
   _RegisterProfileState(this.something);
   DateTime selectedDate = DateTime.now();
@@ -38,6 +47,11 @@ class _RegisterProfileState extends State<RegisterProfile> {
         selectedDate = picked;
       });
   }
+
+  File selectedImage;
+  Uri filename;
+  String token;
+  final _picker = ImagePicker();
 
   String _baseUrl = "https://ruangapi.com/api/v1/provinces";
   List _dataProvince;
@@ -61,6 +75,7 @@ class _RegisterProfileState extends State<RegisterProfile> {
     // TODO: implement initState
     super.initState();
     getProvince();
+    getTokenLogin();
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -96,11 +111,37 @@ class _RegisterProfileState extends State<RegisterProfile> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    new Container(
-                      margin: EdgeInsets.only(top: 30.0),
-                      child: FlatButton(
-                        onPressed: chooseImage,
-                        child: showImage(),
+                    SizedBox(height: 10.0),
+                    Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _showPicker(context);
+                        },
+                        child: Container(
+                          width: 100,
+                          child: selectedImage != null
+                              ? ClipRRect(
+                                  // borderRadius: BorderRadius.circular(50),
+                                  child: Image.file(
+                                    selectedImage,
+                                    fit: BoxFit.fitHeight,
+                                  ),
+                                )
+                              : Container(
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    // borderRadius: BorderRadius.circular(50)
+                                  ),
+                                  child: Card(
+                                    child: Image.asset(
+                                      'images/add-image.png',
+                                      fit: BoxFit.fill,
+                                      height: 100.0,
+                                    ),
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
                     new Container(
@@ -409,30 +450,45 @@ class _RegisterProfileState extends State<RegisterProfile> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward_ios),
-                          iconSize: 50,
+                        SizedBox(height: 10.0),
+                        MaterialButton(
+                          minWidth: 200.0,
+                          height: 42.0,
                           onPressed: () {
                             if (_formKey.currentState.validate()) {
                               // submitProfile();
-                              SubmitProfileResponse.submitProfile(
-                                      nama,
-                                      email,
-                                      formatter.format(tgl_lahir),
-                                      alamat,
-                                      provinsi,
-                                      kota,
-                                      kecamatan,
-                                      password,
-                                      no_hp)
+                              ServiceProfile service = ServiceProfile();
+                              service
+                                  .submitSubscription(
+                                      file: selectedImage,
+                                      filename: filename,
+                                      name: nama,
+                                      email: email,
+                                      tgl_lahir: formatter.format(tgl_lahir),
+                                      alamat: alamat,
+                                      provinsi: provinsi,
+                                      kota: kota,
+                                      kecamatan: kecamatan,
+                                      password: password,
+                                      no_hp: no_hp)
                                   .then((value) {
-                                setState(() {
-                                  submitProfileResponse = value;
-                                  checkResponse();
-                                });
+                                Navigator.pushReplacement(
+                                    context,
+                                    new MaterialPageRoute(
+                                        builder: (context) => new Login()));
+                                // setState(() {
+                                //   // submitProfileResponse = value;
+                                //   // checkResponse();
+                                // });
                               });
                             }
                           },
+                          color: Colors.blue,
+                          child: Text(
+                            'Register',
+                            style: TextStyle(color: Colors.white),
+                            textAlign: TextAlign.left,
+                          ),
                         ),
                       ],
                     )
@@ -530,5 +586,45 @@ class _RegisterProfileState extends State<RegisterProfile> {
         }
       },
     );
+  }
+
+  void _showPicker(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return SafeArea(
+            child: Container(
+              child: new Wrap(
+                children: <Widget>[
+                  new ListTile(
+                      leading: new Icon(Icons.photo_library),
+                      title: new Text('Photo Library'),
+                      onTap: () {
+                        _imgFromGallery();
+                        Navigator.of(context).pop();
+                      }),
+                  // new ListTile(
+                  //   leading: new Icon(Icons.photo_camera),
+                  //   title: new Text('Camera'),
+                  //   onTap: () {
+                  //     _imgFromCamera();
+                  //     Navigator.of(context).pop();
+                  //   },
+                  // ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  _imgFromGallery() async {
+    PickedFile image =
+        await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
+    if (image.path != null) {
+      setState(() {
+        selectedImage = File(image.path != null ? image.path : '');
+      });
+    }
   }
 }
